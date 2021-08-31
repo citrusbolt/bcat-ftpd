@@ -17,7 +17,7 @@ include $(DEVKITPRO)/libnx/switch_rules
 # INCLUDES is a list of directories containing header files
 # EXEFS_SRC is the optional input directory containing data copied into exefs, if anything this normally should only contain "main.npdm".
 #---------------------------------------------------------------------------------
-TARGET		:=	sys-ftpd
+TARGET		:=	bcat-ftpd
 BUILD		:=	build
 SOURCES		:=	source
 DATA		:=	data
@@ -118,10 +118,10 @@ $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 	@rm -rf out
-	@mkdir -p out/atmosphere/contents/420000000000000E/flags
+	@mkdir -p out/atmosphere/contents/420000000000000F/flags
 	@mkdir -p out/config/$(TARGET)
-	@touch out/atmosphere/contents/420000000000000E/flags/boot2.flag
-	@cp $(TARGET).nsp out/atmosphere/contents/420000000000000E/exefs.nsp
+	@touch out/atmosphere/contents/420000000000000F/flags/boot2.flag
+	@cp $(TARGET).nsp out/atmosphere/contents/420000000000000F/exefs.nsp
 	@cp -r sd_card/. out/
 	@echo [DONE] $(TARGET) compiled successfully. All files have been placed in out/
 

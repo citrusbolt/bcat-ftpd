@@ -3,8 +3,8 @@
 
 #define sizearray(a) (sizeof(a) / sizeof((a)[0]))
 
-#define TITLE_ID 0x420000000000000E
-#define CONFIGPATH "/config/sys-ftpd/config.ini"
+#define TITLE_ID 0x420000000000000F
+#define CONFIGPATH "/config/bcat-ftpd/config.ini"
 
 #define R_ASSERT(res_expr)            \
     ({                                \
@@ -15,7 +15,7 @@
         }                             \
     })
 
-Result pauseInit();
-void pauseExit();
-bool isPaused();
-void setPaused(bool newPaused);
+//Result pauseInit();
+//void pauseExit();
+//bool isPaused();
+//void setPaused(bool newPaused);

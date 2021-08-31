@@ -93,8 +93,8 @@ static loop_status_t loop(loop_status_t (*callback)(void))
         console_render();
         if (status != LOOP_CONTINUE)
             return status;
-        if (isPaused())
-            return LOOP_RESTART;
+        //if (isPaused())
+        //    return LOOP_RESTART;
     }
     return LOOP_EXIT;
 }
@@ -104,36 +104,36 @@ int main(int argc, char** argv)
     (void)argc;
     (void)argv;
 
-    FILE* should_log_file = fopen("/config/sys-ftpd/logs/ftpd_log_enabled", "r");
+    FILE* should_log_file = fopen("/config/bcat-ftpd/logs/ftpd_log_enabled", "r");
     if (should_log_file != NULL)
     {
         should_log = true;
         fclose(should_log_file);
 
-        mkdir("/config/sys-ftpd/logs", 0700);
-        unlink("/config/sys-ftpd/logs/ftpd.log");
+        mkdir("/config/bcat-ftpd/logs", 0700);
+        unlink("/config/bcat-ftpd/logs/ftpd.log");
     }
 
     char buffer[100];
     ini_gets("Pause", "disabled:", "0", buffer, 100, CONFIGPATH);
 
     //Checks if pausing is disabled in the config file, in which case it skips the entire pause initialization
-    if (strncmp(buffer, "1", 4) != 0)
-    {
-        Result rc = pauseInit();
-        if (R_FAILED(rc))
-            fatalThrow(rc);
-    }
+    //if (strncmp(buffer, "1", 4) != 0)
+    //{
+    //    Result rc = pauseInit();
+    //    if (R_FAILED(rc))
+    //        fatalThrow(rc);
+    //}
 
     loop_status_t status = LOOP_RESTART;
 
     ftp_pre_init();
     while (status == LOOP_RESTART)
     {
-        while (isPaused())
-        {
-            svcSleepThread(1e+9);
-        }
+        //while (isPaused())
+        //{
+        //    svcSleepThread(1e+9);
+        //}
 
         /* initialize ftp subsystem */
         if (ftp_init() == 0)
@@ -149,7 +149,7 @@ int main(int argc, char** argv)
     }
     ftp_post_exit();
 
-    pauseExit();
+    //pauseExit();
 
     return 0;
 }

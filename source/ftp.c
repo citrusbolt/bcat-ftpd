@@ -37,7 +37,7 @@
 #    define BIT(x) (1 << (x))
 #endif
 #include "console.h"
-#include "led.h"
+//#include "led.h"
 #include "util.h"
 
 #define POLL_UNKNOWN (~(POLLIN | POLLPRI | POLLOUT))
@@ -520,7 +520,7 @@ ftp_session_open_file_read(ftp_session_t* session)
     struct stat st;
 
     /* open file in read mode */
-    if (!strcmp("/config/sys-ftpd/logs/ftpd.log", session->buffer))
+    if (!strcmp("/config/bcat-ftpd/logs/ftpd.log", session->buffer))
     {
         console_print(RED "Tried to open ftpd.log for reading. That's not allowed!\n");
         return -1;
@@ -604,7 +604,7 @@ ftp_session_open_file_write(ftp_session_t* session,
     int rc;
     const char* mode = "wb";
 
-    if (!strcmp("/config/sys-ftpd/logs/ftpd.log", session->buffer))
+    if (!strcmp("/config/bcat-ftpd/logs/ftpd.log", session->buffer))
     {
         console_print(RED "Tried to open ftpd.log for writing. That's not allowed!");
         return -1;
@@ -1214,6 +1214,8 @@ ftp_session_destroy(ftp_session_t* session)
             sessions->prev = session->prev;
     }
 
+	fsdevUnmountDevice("bfs");
+
     /* deallocate */
     free(session);
 
@@ -1253,8 +1255,18 @@ ftp_session_new(int listen_fd)
         return -1;
     }
 
+
+    char str_titleid[100];
+	long titleid;
+    ini_gets("TitleID", "titleid:", "dummy", str_titleid, sizearray(str_titleid), CONFIGPATH);
+    titleid = strtoul(str_titleid, (char**)0, 0);
+
+	static FsFileSystem bfs;
+	fsOpen_BcatSaveData(&bfs, titleid);
+	fsdevMountDevice("bfs", bfs);
+
     /* initialize session */
-    strcpy(session->cwd, "/");
+    strcpy(session->cwd, "bfs:/");
     session->peer_addr.sin_addr.s_addr = INADDR_ANY;
     session->cmd_fd = new_fd;
     session->pasv_fd = -1;
@@ -1775,10 +1787,10 @@ ftp_session_poll(ftp_session_t* session)
 
     /* disconnected from peer; destroy it and return next session */
     debug_print("disconnected from peer\n");
-    if (session->led)
-    {
-        flash_led_disconnect();
-    }
+    //if (session->led)
+    //{
+    //    flash_led_disconnect();
+    //}
 
     return ftp_session_destroy(session);
 }
@@ -2131,7 +2143,7 @@ cd_up(ftp_session_t* session)
     }
     *slash = 0;
     if (strlen(session->cwd) == 0)
-        strcat(session->cwd, "/");
+        strcat(session->cwd, "bfs:/");
 }
 
 /*! validate a path
@@ -2186,7 +2198,7 @@ build_path(ftp_session_t* session,
         return -1;
     }
 
-    if (args[0] == '/')
+    if (args[0] == 'b' && args[1] == 'f' && args[2] == 's' && args[3] == ':' && args[4] == '/')
     {
         /* this is an absolute path */
         size_t len = strlen(args);
@@ -2202,8 +2214,8 @@ build_path(ftp_session_t* session,
     else
     {
         /* this is a relative path */
-        if (strcmp(cwd, "/") == 0)
-            rc = snprintf(session->buffer, sizeof(session->buffer), "/%s",
+        if (strcmp(cwd, "bfs:/") == 0)
+            rc = snprintf(session->buffer, sizeof(session->buffer), "bfs:/%s",
                           args);
         else
             rc = snprintf(session->buffer, sizeof(session->buffer), "%s/%s",
@@ -2228,7 +2240,13 @@ build_path(ftp_session_t* session,
 
     /* if we ended with an empty path, it is the root directory */
     if (session->buffersize == 0)
+	{
+        session->buffer[session->buffersize++] = 'b';
+        session->buffer[session->buffersize++] = 'f';
+        session->buffer[session->buffersize++] = 's';
+        session->buffer[session->buffersize++] = ':';
         session->buffer[session->buffersize++] = '/';
+	}
 
     return 0;
 }
@@ -4101,8 +4119,8 @@ FTP_DECLARE(USER)
         session->user_ok = true;
         session->pass_ok = true;
         ftp_send_response(session, 230, "OK\r\n");
-        if (session->led)
-            flash_led_connect();
+        //if (session->led)
+        //    flash_led_connect();
         return;
     }
 
@@ -4141,8 +4159,8 @@ FTP_DECLARE(PASS)
         session->user_ok = true;
         session->pass_ok = true;
         ftp_send_response(session, 230, "OK\r\n");
-        if (session->led)
-            flash_led_connect();
+        //if (session->led)
+        //    flash_led_connect();
         return;
     }
 
@@ -4166,8 +4184,8 @@ FTP_DECLARE(PASS)
     {
         ftp_session_set_state(session, COMMAND_STATE, 0);
         ftp_send_response(session, 230, "OK\r\n");
-        if (session->led)
-            flash_led_connect();
+        //if (session->led)
+        //    flash_led_connect();
     }
 }
 
