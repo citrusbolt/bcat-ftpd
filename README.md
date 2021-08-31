@@ -1,5 +1,8 @@
 # bcat-ftpd
 
+Grants access to BCAT data of a specified program over FTP.
+
+`sync.sh` is provided to monitor data and archive any changes.  This script uses [***discord.sh***](https://github.com/ChaoticWeg/discord.sh) to send update alerts.
 
 ---
 
