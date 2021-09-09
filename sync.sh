@@ -6,6 +6,9 @@ port="6000"
 date=$(date -u "+%Y.%m.%d-%H%M")
 dir="/path/to/archive/directory"
 discord="/path/to/discord.sh --text"
+
+mkdir -p $dir/latest
+mkdir -p $dir/new
 wget -T 10 -t 3 -m -c -nH --cut-dirs=1 ftp://$user:$pass@$host:$port/directories/ -P $dir/.fresh1
 if [ $? -eq 0 ]
 then
