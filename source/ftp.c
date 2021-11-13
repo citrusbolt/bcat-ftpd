@@ -1214,7 +1214,24 @@ ftp_session_destroy(ftp_session_t* session)
             sessions->prev = session->prev;
     }
 
-	fsdevUnmountDevice("bfs");
+    char str_num[100];
+    ini_gets("TitleID", "quantity:", "dummy", str_num, sizearray(str_num), CONFIGPATH);
+    int title_num = atoi(str_num);
+
+	fsdevUnmountDevice("bfs1");
+
+	if (title_num >= 2)
+		fsdevUnmountDevice("bfs2");
+	if (title_num >= 3)
+		fsdevUnmountDevice("bfs3");
+	if (title_num >= 4)
+		fsdevUnmountDevice("bfs4");
+	if (title_num >= 5)
+		fsdevUnmountDevice("bfs5");
+	if (title_num >= 6)
+		fsdevUnmountDevice("bfs6");
+	if (title_num >= 7)
+		fsdevUnmountDevice("bfs7");
 
     /* deallocate */
     free(session);
@@ -1255,18 +1272,64 @@ ftp_session_new(int listen_fd)
         return -1;
     }
 
+    char str_num[100];
+    ini_gets("TitleID", "quantity:", "dummy", str_num, sizearray(str_num), CONFIGPATH);
+    int title_num = atoi(str_num);
+	static FsFileSystem bfs;
 
     char str_titleid[100];
 	long titleid;
-    ini_gets("TitleID", "titleid:", "dummy", str_titleid, sizearray(str_titleid), CONFIGPATH);
-    titleid = strtoul(str_titleid, (char**)0, 0);
 
-	static FsFileSystem bfs;
+	ini_gets("TitleID", "titleid1:", "dummy", str_titleid, sizearray(str_titleid), CONFIGPATH);
+	titleid = strtoul(str_titleid, (char**)0, 0);
 	fsOpen_BcatSaveData(&bfs, titleid);
-	fsdevMountDevice("bfs", bfs);
+	fsdevMountDevice("bfs1", bfs);
+
+	if (title_num >= 2)
+	{
+		ini_gets("TitleID", "titleid2:", "dummy", str_titleid, sizearray(str_titleid), CONFIGPATH);
+		titleid = strtoul(str_titleid, (char**)0, 0);
+		fsOpen_BcatSaveData(&bfs, titleid);
+		fsdevMountDevice("bfs2", bfs);
+	}
+	if (title_num >= 3)
+	{
+		ini_gets("TitleID", "titleid3:", "dummy", str_titleid, sizearray(str_titleid), CONFIGPATH);
+		titleid = strtoul(str_titleid, (char**)0, 0);
+		fsOpen_BcatSaveData(&bfs, titleid);
+		fsdevMountDevice("bfs3", bfs);
+	}
+	if (title_num >= 4)
+	{
+		ini_gets("TitleID", "titleid4:", "dummy", str_titleid, sizearray(str_titleid), CONFIGPATH);
+		titleid = strtoul(str_titleid, (char**)0, 0);
+		fsOpen_BcatSaveData(&bfs, titleid);
+		fsdevMountDevice("bfs4", bfs);
+	}
+	if (title_num >= 5)
+	{
+		ini_gets("TitleID", "titleid5:", "dummy", str_titleid, sizearray(str_titleid), CONFIGPATH);
+		titleid = strtoul(str_titleid, (char**)0, 0);
+		fsOpen_BcatSaveData(&bfs, titleid);
+		fsdevMountDevice("bfs5", bfs);
+	}
+	if (title_num >= 6)
+	{
+		ini_gets("TitleID", "titleid6:", "dummy", str_titleid, sizearray(str_titleid), CONFIGPATH);
+		titleid = strtoul(str_titleid, (char**)0, 0);
+		fsOpen_BcatSaveData(&bfs, titleid);
+		fsdevMountDevice("bfs6", bfs);
+	}
+	if (title_num >= 7)
+	{
+		ini_gets("TitleID", "titleid7:", "dummy", str_titleid, sizearray(str_titleid), CONFIGPATH);
+		titleid = strtoul(str_titleid, (char**)0, 0);
+		fsOpen_BcatSaveData(&bfs, titleid);
+		fsdevMountDevice("bfs7", bfs);
+	}
 
     /* initialize session */
-    strcpy(session->cwd, "bfs:/");
+    strcpy(session->cwd, "bfs1:/");
     session->peer_addr.sin_addr.s_addr = INADDR_ANY;
     session->cmd_fd = new_fd;
     session->pasv_fd = -1;
@@ -2143,7 +2206,7 @@ cd_up(ftp_session_t* session)
     }
     *slash = 0;
     if (strlen(session->cwd) == 0)
-        strcat(session->cwd, "bfs:/");
+        strcat(session->cwd, "bfs1:/");
 }
 
 /*! validate a path
@@ -2198,24 +2261,47 @@ build_path(ftp_session_t* session,
         return -1;
     }
 
-    if (args[0] == 'b' && args[1] == 'f' && args[2] == 's' && args[3] == ':' && args[4] == '/')
+    if (args[0] == 'b' && args[1] == 'f' && args[2] == 's' && (args[3] >= '1' && args[3] <= '7') && args[4] == ':' && args[5] == '/')
     {
+		/* let's work around wget interpretting our absolute path as a relative one */
+		if (args[6] == 'b' && args[7] == 'f' && args[8] == 's' && (args[9] >= '1' && args[9] <= '7') && args[10] == ':' && args[11] == '/')
+			p = args + 6;
+		else
+			p = args;
         /* this is an absolute path */
-        size_t len = strlen(args);
+        size_t len = strlen(p);
         if (len > sizeof(session->buffer) - 1)
         {
             errno = ENAMETOOLONG;
             return -1;
         }
 
-        memcpy(session->buffer, args, len);
+        memcpy(session->buffer, p, len);
         session->buffersize = len;
     }
     else
     {
         /* this is a relative path */
-        if (strcmp(cwd, "bfs:/") == 0)
-            rc = snprintf(session->buffer, sizeof(session->buffer), "bfs:/%s",
+        if (strcmp(cwd, "bfs1:/") == 0)
+            rc = snprintf(session->buffer, sizeof(session->buffer), "bfs1:/%s",
+                          args);
+        else if (strcmp(cwd, "bfs2:/") == 0)
+            rc = snprintf(session->buffer, sizeof(session->buffer), "bfs2:/%s",
+                          args);
+        else if (strcmp(cwd, "bfs3:/") == 0)
+            rc = snprintf(session->buffer, sizeof(session->buffer), "bfs3:/%s",
+                          args);
+        else if (strcmp(cwd, "bfs4:/") == 0)
+            rc = snprintf(session->buffer, sizeof(session->buffer), "bfs4:/%s",
+                          args);
+        else if (strcmp(cwd, "bfs5:/") == 0)
+            rc = snprintf(session->buffer, sizeof(session->buffer), "bfs5:/%s",
+                          args);
+        else if (strcmp(cwd, "bfs6:/") == 0)
+            rc = snprintf(session->buffer, sizeof(session->buffer), "bfs6:/%s",
+                          args);
+        else if (strcmp(cwd, "bfs7:/") == 0)
+            rc = snprintf(session->buffer, sizeof(session->buffer), "bfs7:/%s",
                           args);
         else
             rc = snprintf(session->buffer, sizeof(session->buffer), "%s/%s",
@@ -2232,8 +2318,9 @@ build_path(ftp_session_t* session,
 
     /* remove trailing / */
     p = session->buffer + session->buffersize;
-    while (p > session->buffer && *--p == '/')
+    while (p > session->buffer && *--p == '/' && *--p != ':')
     {
+		*p++;
         *p = 0;
         --session->buffersize;
     }
@@ -2244,6 +2331,7 @@ build_path(ftp_session_t* session,
         session->buffer[session->buffersize++] = 'b';
         session->buffer[session->buffersize++] = 'f';
         session->buffer[session->buffersize++] = 's';
+        session->buffer[session->buffersize++] = '1';
         session->buffer[session->buffersize++] = ':';
         session->buffer[session->buffersize++] = '/';
 	}

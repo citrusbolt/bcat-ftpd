@@ -23,8 +23,8 @@
 
 // We aren't an applet.
 u32 __nx_applet_type = AppletType_None;
-// We're a sysmodule and don't need multithreaded FS. Use 1 session instead of default 3.
-u32 __nx_fs_num_sessions = 1;
+// Bumping this up to 2 in order to attempt to avoid crashes caused by concurrent connections.
+u32 __nx_fs_num_sessions = 2;
 
 // setup a fake heap
 char fake_heap[HEAP_SIZE];
