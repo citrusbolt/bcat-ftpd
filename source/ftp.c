@@ -1,6 +1,6 @@
 // This file is under the terms of the unlicense (https://github.com/DavidBuchanan314/ftpd/blob/master/LICENSE)
 
-#define ENABLE_LOGGING 1
+#define ENABLE_LOGGING 0
 /* This FTP server implementation is based on RFC 959,
  * (https://tools.ietf.org/html/rfc959), RFC 3659
  * (https://tools.ietf.org/html/rfc3659) and suggested implementation details
@@ -1232,6 +1232,10 @@ ftp_session_destroy(ftp_session_t* session)
 		fsdevUnmountDevice("bfs6");
 	if (title_num >= 7)
 		fsdevUnmountDevice("bfs7");
+	if (title_num >= 8)
+		fsdevUnmountDevice("bfs8");
+	if (title_num >= 9)
+		fsdevUnmountDevice("bfs9");
 
     /* deallocate */
     free(session);
@@ -1326,6 +1330,20 @@ ftp_session_new(int listen_fd)
 		titleid = strtoul(str_titleid, (char**)0, 0);
 		fsOpen_BcatSaveData(&bfs, titleid);
 		fsdevMountDevice("bfs7", bfs);
+	}
+	if (title_num >= 8)
+	{
+		ini_gets("TitleID", "titleid8:", "dummy", str_titleid, sizearray(str_titleid), CONFIGPATH);
+		titleid = strtoul(str_titleid, (char**)0, 0);
+		fsOpen_BcatSaveData(&bfs, titleid);
+		fsdevMountDevice("bfs8", bfs);
+	}
+	if (title_num >= 9)
+	{
+		ini_gets("TitleID", "titleid9:", "dummy", str_titleid, sizearray(str_titleid), CONFIGPATH);
+		titleid = strtoul(str_titleid, (char**)0, 0);
+		fsOpen_BcatSaveData(&bfs, titleid);
+		fsdevMountDevice("bfs9", bfs);
 	}
 
     /* initialize session */
@@ -2261,10 +2279,10 @@ build_path(ftp_session_t* session,
         return -1;
     }
 
-    if (args[0] == 'b' && args[1] == 'f' && args[2] == 's' && (args[3] >= '1' && args[3] <= '7') && args[4] == ':' && args[5] == '/')
+    if (args[0] == 'b' && args[1] == 'f' && args[2] == 's' && (args[3] >= '1' && args[3] <= '9') && args[4] == ':' && args[5] == '/')
     {
 		/* let's work around wget interpretting our absolute path as a relative one */
-		if (args[6] == 'b' && args[7] == 'f' && args[8] == 's' && (args[9] >= '1' && args[9] <= '7') && args[10] == ':' && args[11] == '/')
+		if (args[6] == 'b' && args[7] == 'f' && args[8] == 's' && (args[9] >= '1' && args[9] <= '9') && args[10] == ':' && args[11] == '/')
 			p = args + 6;
 		else
 			p = args;
@@ -2302,6 +2320,12 @@ build_path(ftp_session_t* session,
                           args);
         else if (strcmp(cwd, "bfs7:/") == 0)
             rc = snprintf(session->buffer, sizeof(session->buffer), "bfs7:/%s",
+                          args);
+        else if (strcmp(cwd, "bfs8:/") == 0)
+            rc = snprintf(session->buffer, sizeof(session->buffer), "bfs8:/%s",
+                          args);
+        else if (strcmp(cwd, "bfs9:/") == 0)
+            rc = snprintf(session->buffer, sizeof(session->buffer), "bfs9:/%s",
                           args);
         else
             rc = snprintf(session->buffer, sizeof(session->buffer), "%s/%s",
